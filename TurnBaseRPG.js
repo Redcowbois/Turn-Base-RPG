@@ -26,13 +26,13 @@ const CHAR1 = {
     {
       name: "Flamethrower",
       speed: 1.04,
-      atk: 20,
+      atk: 30,
       category: "Atk"
     },
     {
       name: "Fire Shield",
       speed: 1.5,
-      def: 25,
+      def: 20,
       category: "Def"
     },
   ],
@@ -103,14 +103,20 @@ const ALLCHARNAMES = [
   "[2] " + CHAR2.name,
   "[3] " + CHAR3.name,
 ];
-                      
-let enemyHp= 500;                                 // defining some essential variables for the game to work
-let enemyChar= ALLCHAR[randomNumber(0, ALLCHAR.length-1)];
-let enemyAbility;
+
+
+// defining some essential variables for the game to work
+let enemyHp= 500;                                                   //the total health
+let enemyChar= ALLCHAR[randomNumber(0, ALLCHAR.length-1)];          // chooses a random char out of the selection
+let enemyAbility;                                                   // ability chosen (changes each round) 
+let enemyRoundDamage;                                               // ability damage (changes each round)
+let enemyDamageTaken;                                               // final damage - after multipliers and stuff (changes each round)
 
 let playerHp = 500;   
 let playerChar; 
 let playerAbility;
+let playerRoundDamage;
+let playerDamageTaken;
 
 let playerAbilityList = []
 let roundCount = 0;
@@ -209,14 +215,103 @@ function chooseEnemyAbility() {             // goes with abilityPrompt() (line 1
   enemyAbility = enemyChar.abilities[randomNumber(1, enemyChar.abilities.length-1)]
 }
 
-function fightLoop() {                       // goes with abilityPrompt() (line 173), deals damage according to abilities
-  console.log(playerAbility.name, playerAbility.speed)
+function fightLoop() {                      // goes with abilityPrompt() (line 173), deals damage according to abilities
+  console.log(playerAbility.name, playerAbility.speed) // remove this in final version 
   console.log(enemyAbility.name, enemyAbility.speed)
-  if (playerChar.speed*playerAbility.speed >= enemyChar.speed*enemyAbility.speed) {
-    playerAttack()
-    enemyAttack()
-  } else {
-    enemyAttack()
-    playerAttack()
+  playerAttack()
+  enemyAttack()
+  checkShielded()
+  applyTypeMultiplier(playerDamageTaken, enemyChar, playerChar)
+  applyTypeMultiplier(enemyDamageTaken, playerChar, enemyChar)
+  applyDamage()
+}
+
+function playerAttack() {                // goes with fightLoop() (line 212), calculates the dmg dealt
+  playerRoundDamage=0
+  switch(playerAbility.category){
+    case "Atk":
+      playerRoundDamage = Math.ceil(25*Math.log10((playerChar.atk+10))) + playerAbility.atk          //playerChar.atk is scaled using 25*log((x+10)) to implement diminishing returns
+      console.log(`${playerChar.name} uses ${playerAbility.name} and does ${damage} damage!`) // remove these in final version
+      break
+    case "Def":
+      playerRoundDamage = -(Math.ceil(25*Math.log10((playerChar.def()+10))) + playerAbility.def)          //playerChar.def is scaled using 25*log((x+10)) to implement diminishing returns
+      console.log(`${playerChar.name} uses ${playerAbility.name} and does ${damage} damage!`)
   }
+  
+  return playerRoundDamage
+}
+
+function enemyAttack() {                // goes with fightLoop() (line 212), calculates the dmg dealt
+  enemyRoundDamage=0
+  switch(enemyAbility.category){
+    case "Atk":
+      enemyRoundDamage = Math.ceil(25*Math.log10((enemyChar.atk+10))) + vAbility.atk                   //playerChar.atk is scaled using 25*log((x+10)) to implement diminishing returns
+      console.log(`${enemyChar.name} uses ${enemyAbility.name} and does ${damage} damage!`)
+      break
+    case "Def":
+      enemyRoundDamage = -(Math.ceil(25*Math.log10((enemyChar.def()+10))) + enemyAbility.def)          //playerChar.def is scaled using 25*log((x+10)) to implement diminishing returns
+      console.log(`${enemyChar.name} uses ${enemyAbility.name} and does ${damage} damage!`)
+  }
+  return enemyRoundDamage
+}
+
+function checkShielded() {             // goes with fightLoop() (line 212), check if 1/2 chars are shielded or not and applies healing
+  playerDamageTaken = enemyRoundDamage
+  enemyDamageTaken = playerRoundDamage
+  if (playerRoundDamage>0 && enemyRoundDamage<0) {         //case: player atk and enemy shielded
+    enemyDamageTaken = enemyRoundDamage + playerRoundDamage
+    playerDamageTaken = 0    
+  }
+  if (playerRoundDamage<0 && enemyRoundDamage>0) {          //case: player shielded and enemy atk
+    playerDamageTaken = playerRoundDamage + enemyRoundDamage
+    enemyDamageTaken = 0  
+  }
+  if (playerRoundDamage<0 && enemyRoundDamage<0) {          //case: both shielded, will take dmg = shield value/2
+    playerDamageTaken = -(playerRoundDamage/2)
+    enemyDamageTaken = -(enemyRoundDamage/2)
+  }
+}
+
+function applyTypeMultiplier(damage, fromChar, toChar) {     // goes with fightLoop() (line 212), applies a multiplier to the damage depending on the type
+  switch(fromChar.typeName) {
+    case "Fire":
+      if (toChar.typeName=="Fire") {
+        damage *= 1
+      } 
+      if (toChar.typeName=="Water") {
+        damage *= 0.8
+      } 
+      if (toChar.typeName=="Nature") {
+        damage *= 1.2
+      } 
+      break
+    case "Water":
+      if (toChar.typeName=="Fire") {
+        damage *= 1.2
+      } 
+      if (toChar.typeName=="Water") {
+        damage *= 1
+      } 
+      if (toChar.typeName=="Nature") {
+        damage *= 0.8
+      } 
+      break
+    case "Nature":
+      if (toChar.typeName=="Fire") {
+        damage *= 0.8
+      } 
+      if (toChar.typeName=="Water") {
+        damage *= 1.2
+      } 
+      if (toChar.typeName=="Nature") {
+        damage *= 0
+      } 
+      break
+
+  }
+  return damage
+}
+
+function applyDamage() {            // goes with fightLoop() (line 212), applies the damage depending on speed and checks if anyone has died
+
 }
