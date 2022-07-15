@@ -27,11 +27,13 @@ const CHAR1 = {
       name: "Flamethrower",
       speed: 1.04,
       atk: 20,
+      category: "Atk"
     },
     {
       name: "Fire Shield",
       speed: 1.5,
       def: 25,
+      category: "Def"
     },
   ],
 };
@@ -52,11 +54,13 @@ const CHAR2 = {
       name: "Water Gun",
       speed: 1.07,
       atk: 15,
+      category: "Atk"
     },
     {
       name: "Water Shield",
       speed: 1.55,
       def: 35,
+      category: "Def"
     },
   ],
 };
@@ -77,11 +81,13 @@ const CHAR3 = {
       name: "Vine Grip",
       speed: 1.1,
       atk: 20,
+      category: "Atk"
     },
     {
       name: "Grass Shield",
       speed: 1.65,
       def: 25,
+      category: "Def"
     },
   ],
 };
@@ -97,14 +103,17 @@ const ALLCHARNAMES = [
   "[2] " + CHAR2.name,
   "[3] " + CHAR3.name,
 ];
+                      
+let enemyHp= 500;                                 // defining some essential variables for the game to work
+let enemyChar= ALLCHAR[randomNumber(0, ALLCHAR.length-1)];
+let enemyAbility;
 
-let playerHp = 500;                                        // defining some essential variables for the game to work
-let enemyHp= 500;
-let enemyChar= ALLCHAR[randomNumber(1,ALLCHAR.length-1)];
+let playerHp = 500;   
 let playerChar; 
 let playerAbility;
-let enemyAbility;
+
 let playerAbilityList = []
+let roundCount = 0;
 
 chooseChar()
 function chooseChar() {                          // makes the player choose a character and starts the game 
@@ -113,16 +122,20 @@ function chooseChar() {                          // makes the player choose a ch
   prompt.get(["character id"], function (err, result) {
     for (const e of ALLCHAR) {
       if (result["character id"] == e["id"]) {
+        console.log(``)
         console.log("You have chosen " + e.name + ".");
+        console.log(``)
         console.log(`Your enemy will be ${enemyChar.name}.`)
+        console.log(``)
         playerChar = e
         createAbilityList(playerChar)
-        console.log("Game Starting...")
-        console.log(`
-        
-        
-        `)
-        setTimeout(gameLoop, 1000)
+        setTimeout(() => {
+          console.log("Game Starting...");
+          console.log(`==========`);
+          console.log(`  FIGHT!`);
+          console.log(`==========`);
+        }, 2)                           // set to delay 2000
+        setTimeout(gameLoop, 4)          // set to delay 4000
     }
   }
   if (playerChar == undefined) {
@@ -139,14 +152,13 @@ Game Loop Functions
 
 
 function gameLoop() {           // main game loop
+  roundCount++
+  console.log(``)
+  console.log(``)
+  console.log(`-=ROUND ${roundCount}=-`)
+  console.log(``)
   checkEnd()
   startRound()
-}
-
-function createAbilityList(char) {          //creates a list of all abilities             
-  for (const e of char.abilities) {         // this will be used to check if the ability selected is valid
-    playerAbilityList.push(e.name)
-  } 
 }
 
 function checkEnd() {                      // check if someone died
@@ -164,8 +176,14 @@ function startRound() {                   // starts the round and prompts the pl
 
 function listAbilities(abilities) {      // goes with startRound() (line 155), displays ability name and attributes of the character
   for (const f of abilities) {
-    console.log(`{Ability Name: ${f.name}, Speed: ${f.speed}, ${f.atk || f.def}}`)
+    console.log(`{Ability Name: ${f.name}, Speed: ${f.speed}, ${f.category}: ${f.atk || f.def}}`)
   }
+}
+
+function createAbilityList(char) {          //creates a list of all abilities             
+  for (const e of char.abilities) {         // this will be used to check if the ability selected is valid
+    playerAbilityList.push(e)
+  } 
 }
 
 function abilityPrompt() {              // goes with startRound() (line 155), asks the user to input the wanted ability
@@ -173,12 +191,12 @@ function abilityPrompt() {              // goes with startRound() (line 155), as
   prompt.get([`ability name`], function(err, result) {
     let abilityChosen=false
     for (const e of playerAbilityList) {
-      // console.log(result["ability name"])
-      // console.log(e)
-      if (result["ability name"]==e) {
+      if (result["ability name"]==e.name) {
         console.log(`${playerChar.name} will use ${result["ability name"]}`)
-        playerAbility=result["ability name"]
+        playerAbility=e
         abilityChosen=true
+        chooseEnemyAbility()
+        fightLoop()
       } 
     }
     if (!abilityChosen) {
@@ -186,3 +204,19 @@ function abilityPrompt() {              // goes with startRound() (line 155), as
       abilityPrompt()
     }
 })}
+
+function chooseEnemyAbility() {             // goes with abilityPrompt() (line 173), chooses the enemy ability
+  enemyAbility = enemyChar.abilities[randomNumber(1, enemyChar.abilities.length-1)]
+}
+
+function fightLoop() {                       // goes with abilityPrompt() (line 173), deals damage according to abilities
+  console.log(playerAbility.name, playerAbility.speed)
+  console.log(enemyAbility.name, enemyAbility.speed)
+  if (playerChar.speed*playerAbility.speed >= enemyChar.speed*enemyAbility.speed) {
+    playerAttack()
+    enemyAttack()
+  } else {
+    enemyAttack()
+    playerAttack()
+  }
+}
