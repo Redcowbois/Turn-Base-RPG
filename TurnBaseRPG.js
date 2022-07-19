@@ -22,12 +22,14 @@ const CHAR1 = {
   typeId: 1,
   abilities: [
     {
+      id: 1,
       name: "Flamethrower",
       speed: 1.04,
       atk: 30,
       category: "Atk"
     },
     {
+      id: 2,
       name: "Molten Shield",
       speed: 1.5,
       def: 30,
@@ -49,12 +51,14 @@ const CHAR2 = {
   typeId: 2,
   abilities: [
     {
+      id: 1,
       name: "Water Gun",
       speed: 1.07,
-      atk: 15,
+      atk: 20,
       category: "Atk"
     },
     {
+      id: 2,
       name: "Water Shield",
       speed: 1.55,
       def: 45,
@@ -76,12 +80,14 @@ const CHAR3 = {
   typeId: 3,
   abilities: [
     {
+      id: 1,
       name: "Vine Grip",
       speed: 1.1,
-      atk: 20,
+      atk: 25,
       category: "Atk"
     },
     {
+      id: 2,
       name: "Grass Shield",
       speed: 1.65,
       def: 35,
@@ -181,7 +187,7 @@ function startRound() {                     // starts the round and prompts the 
   console.log(``)
   console.log(`Choose an ability to use from the following: `)
   for (const f of playerChar.abilities) {   // lists abilities that can be chosen 
-    console.log(`{Ability Name: ${f.name}, Speed Multiplier: ${f.speed}, ${f.category}: ${f.atk || f.def}}`)
+    console.log(`{Id: [${f.id}], Ability Name: ${f.name}, Speed Multiplier: ${f.speed}, ${f.category}: ${f.atk || f.def}}`)
   }
   console.log(``)
 
@@ -190,10 +196,10 @@ function startRound() {                     // starts the round and prompts the 
 
 function abilityPrompt() {              // goes with startRound() (around line 168), asks the user to input the wanted ability
   prompt.start()
-  prompt.get([`ability name`], function(err, result) {
+  prompt.get([`ability id`], function(err, result) {
     let abilityChosen=false
     for (const e of playerAbilityList) {
-      if (result["ability name"]==e.name) {
+      if (result["ability id"]==e.id) {
         playerAbility=e
         abilityChosen=true
         enemyAbility = enemyChar.abilities[randomNumber(0, enemyChar.abilities.length-1)]
@@ -259,11 +265,11 @@ function checkShielded() {             // goes with fightLoop() (around line 202
     playerDamageTaken = playerRoundDamage + enemyRoundDamage
     enemyDamageTaken = 0  
   }
-  if (playerRoundDamage<0 && enemyRoundDamage<0) {          //case: both shielded, will take dmg = shield value/2
+  if (playerRoundDamage<0 && enemyRoundDamage<0) {          //case: both shielded, will take dmg = shield value/3
     console.log("")
     console.log("Both were shielded, applying brain damage.")
-    playerDamageTaken = -(playerRoundDamage/2)
-    enemyDamageTaken = -(enemyRoundDamage/2)
+    playerDamageTaken = -(playerRoundDamage/3)
+    enemyDamageTaken = -(enemyRoundDamage/3)
   }
 }
 
@@ -408,6 +414,22 @@ function checkEnd() {                       // goes with applyDamage() (around l
 }
 
 function showHp() {                         //  goes with applyDamage() (around line 304), shows the current hp 
+  console.log("")
+  if (playerHp >= 225) {
+    playerHp = 225
+
+    console.log("You cannot heal over 225 total Hp.")
+  }
+  if (enemyHp >= 225) {
+    enemyHp = 225
+  }
+  if (playerDamageTaken < 0) {
+    console.log("Your shield blocked all the damage and healed you.")
+  }
+  if (enemyDamageTaken < 0 ) {
+    console.log("The enemy shield blocked all the damage and they got healed.")
+  }
+
   console.log("")
   console.log("-------------------------------------") 
   console.log(`You now have ${playerHp} health.`)
