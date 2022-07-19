@@ -30,7 +30,7 @@ const CHAR1 = {
     {
       name: "Molten Shield",
       speed: 1.5,
-      def: 20,
+      def: 40,
       category: "Def"
     },
   ],
@@ -57,7 +57,7 @@ const CHAR2 = {
     {
       name: "Water Shield",
       speed: 1.55,
-      def: 35,
+      def: 55,
       category: "Def"
     },
   ],
@@ -84,7 +84,7 @@ const CHAR3 = {
     {
       name: "Grass Shield",
       speed: 1.65,
-      def: 25,
+      def: 45,
       category: "Def"
     },
   ],
@@ -105,7 +105,7 @@ const ALLCHARNAMES = [
 
 // defining some essential variables for the game to work
 let enemyHp= 200;                                                   //the total health
-let enemyChar= ALLCHAR[randomNumber(0, ALLCHAR.length-1)];          // chooses a random char out of the selection
+let enemyChar;                                                      // enemy character 
 let enemyAbility;                                                   // ability chosen (changes each round) 
 let enemyRoundDamage;                                               // ability damage (changes each round)
 let enemyDamageTaken;                                               // final damage - after multipliers and stuff (changes each round)
@@ -136,6 +136,13 @@ function chooseChar() {                                        // makes the play
         for (const ability of playerChar.abilities) {         // array used to check if chosen ability valid later 
           playerAbilityList.push(ability)
         } 
+        chooseEnemyChar()                                     // chooses a character different from yours 
+        function chooseEnemyChar() {
+          enemyChar = ALLCHAR[randomNumber(0, ALLCHAR.length-1)]
+          if (enemyChar.name == playerChar.name) {
+            chooseEnemyChar()
+          }
+        }
 
         console.log(``)                                       // below is just text
         console.log("You have chosen " + e.name + ".");
