@@ -30,7 +30,7 @@ const CHAR1 = {
     {
       name: "Molten Shield",
       speed: 1.5,
-      def: 40,
+      def: 30,
       category: "Def"
     },
   ],
@@ -57,7 +57,7 @@ const CHAR2 = {
     {
       name: "Water Shield",
       speed: 1.55,
-      def: 55,
+      def: 45,
       category: "Def"
     },
   ],
@@ -84,7 +84,7 @@ const CHAR3 = {
     {
       name: "Grass Shield",
       speed: 1.65,
-      def: 45,
+      def: 35,
       category: "Def"
     },
   ],
